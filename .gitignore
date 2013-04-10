@@ -1,0 +1,15 @@
+
+*~
+*#
+__pycache__
+*.tmp
+.#*
+*.pyc
+*.aux
+*.dvi
+*.log
+build
+
+*.so
+*.c
+*.egg-info
