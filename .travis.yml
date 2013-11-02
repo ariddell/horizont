@@ -1,0 +1,14 @@
+language: python
+python:
+  - "2.7"
+  - "3.3"
+before_install:
+  - sudo apt-get install -qq liblapack-dev gfortran libblas-dev
+install:
+  # alternation of --quiet: travis-ci errors if it doesn't get output in 10m
+  - "pip install numpy --quiet --use-mirrors"
+  - "pip install scipy --use-mirrors"
+  - "pip install Cython --quiet --use-mirrors"
+  - "pip install scikit-learn --use-mirrors"
+  - "pip install . --use-mirrors"
+script: nosetests -w /tmp --process-timeout=1200 --processes=2 horizont.tests

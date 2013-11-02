@@ -1,6 +1,9 @@
 horizont: Dynamic topic models
 ==============================
 
+.. image:: https://travis-ci.org/ariddell/horizont.png
+        :target: https://travis-ci.org/ariddell/horizont
+
 horizont implements a number of topic models. Conventions from scikit-learn_ are
 followed.
 

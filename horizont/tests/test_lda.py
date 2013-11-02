@@ -30,7 +30,7 @@ class TestLDA(unittest.TestCase):
     def test_ldac_conversion(self):
         dtm = self.dtm
         self.assertEqual(dtm.shape, (2246, 10473))
-        ldac = io.StringIO('\n'.join(list(horizont.utils.dtm2ldac(dtm))))
+        ldac = io.StringIO(u'\n'.join(list(horizont.utils.dtm2ldac(dtm))))
         self.assertTrue(np.all(horizont.utils.ldac2dtm(ldac) == dtm))
 
     def test_lda_vs_mallet(self):
@@ -49,7 +49,7 @@ class TestLDA(unittest.TestCase):
         dtm, K = self.dtm, self.K
         vocab = self.vocab
         t0 = time.time()
-        n_iter = 200
+        n_iter = 100
         t0 = time.time()
         fit = horizont.LDA(n_topics=K, n_iter=n_iter, random_state=1).fit(dtm)
         print("fit done in %0.3fs." % (time.time() - t0))

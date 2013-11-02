@@ -16,7 +16,7 @@ CLASSIFIERS = [
     'Programming Language :: Python',
     'Programming Language :: Python :: 2',
     'Programming Language :: Python :: 3',
-    'Development Status :: 4 - Pre-alpha',
+    'Development Status :: 3 - Alpha',
     'Environment :: Console',
     'Operating System :: OS Independent',
     'Intended Audience :: Developers',
@@ -29,7 +29,7 @@ REQUIRES = ['numpy', 'scipy', 'scikit-learn']
 MAJOR = 0
 MINOR = 0
 MICRO = 1
-ISRELEASED = False
+ISRELEASED = True
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 FULLVERSION = VERSION
@@ -37,7 +37,7 @@ if not ISRELEASED:
     FULLVERSION += '.dev'
 
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 from distutils.command.sdist import sdist
 from distutils.extension import Extension
 
@@ -83,11 +83,15 @@ if cython:
 else:
     extensions = [Extension("horizont._lda", ["horizont/_lda.c"])]
 
+import numpy
+include_dirs = [numpy.get_include()]
+
 setup(install_requires=REQUIRES,
       name=NAME,
       version=FULLVERSION,
       maintainer=MAINTAINER,
       maintainer_email=MAINTAINER_EMAIL,
+      packages=find_packages(),
       description=DESCRIPTION,
       long_description=LONG_DESCRIPTION,
       license=LICENSE,
@@ -95,4 +99,6 @@ setup(install_requires=REQUIRES,
       url=URL,
       classifiers=CLASSIFIERS,
       ext_modules=extensions,
+      package_data={'horizont.tests': ['ap.tgz']},
+      include_dirs=include_dirs,
       platforms='any')

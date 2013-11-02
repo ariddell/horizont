@@ -13,3 +13,4 @@ build
 *.so
 *.c
 *.egg-info
+doc/_build

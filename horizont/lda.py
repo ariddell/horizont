@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Latent Dirichlet Allocation with Gibbs sampling
 
@@ -71,16 +72,15 @@ class LDA(BaseEstimator, TransformerMixin):
 
     References
     ----------
+    Blei, David M., Andrew Y. Ng, and Michael I. Jordan. "Latent Dirichlet
+    Allocation." Journal of Machine Learning Research 3 (2003): 993–1022.
 
-    Blei, David M., Andrew Y. Ng, and Michael I. Jordan. “Latent Dirichlet
-    Allocation.” Journal of Machine Learning Research 3 (2003): 993–1022.
-
-    Griffiths, Thomas L., and Mark Steyvers. “Finding Scientific Topics.”
+    Griffiths, Thomas L., and Mark Steyvers. "Finding Scientific Topics."
     Proceedings of the National Academy of Sciences 101 (2004): 5228–5235.
     doi:10.1073/pnas.0307752101.
 
-    Wallach, Hanna, David Mimno, and Andrew McCallum. “Rethinking LDA: Why
-    Priors Matter.” In Advances in Neural Information Processing Systems 22,
+    Wallach, Hanna, David Mimno, and Andrew McCallum. "Rethinking LDA: Why
+    Priors Matter." In Advances in Neural Information Processing Systems 22,
     edited by Y.  Bengio, D. Schuurmans, J. Lafferty, C. K. I. Williams, and A.
     Culotta, 1973–1981, 2009.
     """
