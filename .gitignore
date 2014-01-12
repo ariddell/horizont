@@ -1,0 +1,17 @@
+
+*~
+*#
+__pycache__
+*.tmp
+.#*
+*.pyc
+*.aux
+*.dvi
+*.log
+build
+
+*.so
+*.c
+*.egg-info
+doc/_build
+vb_suite/benchmarks.db
