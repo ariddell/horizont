@@ -120,7 +120,13 @@ def ldac2dtm(stream):
     ----
     LDA-C formatted files are offset 1.
     """
-    doclines = [docline for docline in stream.read().split('\n') if docline]
+    try:
+        contents = stream.read().decode('utf-8')
+    except AttributeError:
+        contents = stream.read()
+
+    doclines = [docline for docline in contents.split('\n') if docline]
+
     # we need to figure out the dimensions of the dtm. N is easy. Finding V takes a pass through the data
     N = len(doclines)
     data = []
