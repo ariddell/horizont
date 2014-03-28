@@ -88,7 +88,7 @@ class LDA(BaseEstimator, TransformerMixin):
         self.eta = eta
         self._random_state = check_random_state(random_state)
         # random numbers that are reused
-        self._rands = self._random_state.rand(10000)
+        self._rands = self._random_state.rand(1000)
 
     def fit(self, X, y=None):
         """Fit the model with X.
