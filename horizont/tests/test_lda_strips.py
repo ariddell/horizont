@@ -149,18 +149,6 @@ def sparsify_topics(topics):
     return topics
 
 
-def save_document_image(filename, doc, zoom=2):
-    """
-    Save document as an image.
-
-    doc must be a square matrix
-    """
-    height, width = doc.shape
-    zoom = np.ones((width*zoom, width*zoom))
-    # imsave scales pixels between 0 and 255 automatically
-    scipy.misc.imsave(filename, np.kron(doc, zoom))
-
-
 class TestLDAStripes(unittest.TestCase):
 
     topics = make_topics(NUM_TOPICS)
@@ -169,28 +157,6 @@ class TestLDAStripes(unittest.TestCase):
     with open(os.path.join(tempdir, 'strips.ldac'), 'w') as f:
         f.write('\n'.join(utils.dtm2ldac(dtm)))
         f.write('\n')
-
-    def _make_picture(self, clf):
-        topics = self.topics
-        ll = clf.loglikelihood()
-        inferred = clf.components_
-        print("making picture for loglike: {}".format(ll))
-        try:
-            inferred = order_topics(sparsify_topics(inferred), topics)
-        except ValueError:
-            return None
-        print("max abs difference: ", np.max(np.abs(topics - inferred)))
-        np.testing.assert_allclose(topics, inferred, atol=0.05)
-        tmpdir = '/tmp/horizont-topic-images'
-        if os.path.exists(tmpdir):
-            shutil.rmtree(tmpdir)
-        os.mkdir(tmpdir)
-        for z, topic in enumerate(inferred):
-            width = 5
-            phi = topic + clf.eta
-            phi /= np.sum(phi)
-            fn = "{}/topic{:02d}-iter{:d}-ll{:.0f}.png".format(tmpdir, z, clf.n_iter, ll)
-            save_document_image(fn, phi.reshape(width, -1))
 
     def test_topics(self):
         topics = self.topics
@@ -287,7 +253,6 @@ class TestLDAStripes(unittest.TestCase):
             for fut in futures.as_completed(futs):
                 clf = fut.result()
                 ll = clf.loglikelihood()
-                self._make_picture(clf)
                 lls.append(ll)
         for ll in lls:
             # LDA after 20 iterations should be -266000
