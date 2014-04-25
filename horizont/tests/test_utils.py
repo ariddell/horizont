@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import io
+import os
 import unittest
 
 import numpy as np
@@ -44,10 +45,19 @@ class TestUtils(unittest.TestCase):
         dtm_new = utils.lists_to_matrix(WS, DS)
         self.assertTrue(np.all(dtm == dtm_new))
 
+    def test_ldac2dtm_offset(self):
+        test_dir = os.path.dirname(__file__)
+        ap_ldac_fn = os.path.join(test_dir, 'ap.dat')
+        with self.assertRaises(ValueError):
+            utils.ldac2dtm(open(ap_ldac_fn), offset=1)
+
     def test_ldac_conversion(self):
         dtm = self.dtm
         N, V = dtm.shape
         doclines = list(utils.dtm2ldac(self.dtm))
+        nd_unique = np.sum(dtm > 0, axis=1)
+        for n, docline in zip(nd_unique, doclines):
+            self.assertEqual(n, int(docline.split(' ')[0]))
         self.assertEqual(len(doclines), N)
         f = io.StringIO('\n'.join(doclines))
         dtm_new = utils.ldac2dtm(f)
@@ -63,4 +73,43 @@ class TestUtils(unittest.TestCase):
         r = 10
         self.assertEqual(np.searchsorted(arr, r), _utils.searchsorted(arr, r))
 
+    def test_choice(self):
+        r = 0.9851367976958045
+        probz = np.array([0.14800396, 0.29600989, 0.46001528])
+        z = _utils.choice(probz, r)
+        self.assertEqual(z, len(probz) - 1)
 
+        N = 10000
+        K = 100
+        samples = []
+        random_state = np.random.RandomState(1)
+        for _ in range(N):
+            # unnormalized probability distribution
+            dist = random_state.randint(10, 1000, size=K).astype(float)
+            samples.append(_utils.choice(dist, random_state.rand()))
+        self.assertGreaterEqual(max(samples), 0)
+        self.assertLessEqual(max(samples), K-1)
+
+        p = 1/K
+        bound = 3*np.sqrt(N*p*(1-p))
+        counts = np.bincount(samples)
+        for k in range(K):
+            self.assertLess(abs(counts[k] - N*p), bound)
+
+    def test_choice_consistency(self):
+        N = 1000
+        K = 100
+        samples = []
+        random_state = np.random.RandomState(1)
+        for _ in range(N):
+            # unnormalized probability distribution
+            dist = random_state.randint(10, 1000, size=K).astype(float)
+            samples.append(_utils.choice(dist, random_state.rand()))
+
+        samples2 = []
+        random_state = np.random.RandomState(1)
+        for _ in range(N):
+            # unnormalized probability distribution
+            dist = random_state.randint(10, 1000, size=K).astype(float)
+            samples2.append(_utils.choice(dist, random_state.rand()))
+        self.assertEqual(samples, samples2)

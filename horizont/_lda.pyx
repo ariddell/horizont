@@ -1,13 +1,15 @@
+#cython: boundscheck=False
+#cython: wraparound=False
+
 cimport cython
 cimport numpy as np
 cimport libc.math as math
 
 import numpy as np
+import horizont.utils
 import horizont._utils
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
 @cython.cdivision(True)
 def _sample_topics(np.ndarray[np.int_t] WS, np.ndarray[np.int_t] DS, np.ndarray[np.int_t] ZS,
                    np.ndarray[np.int_t, ndim=2] nzw, np.ndarray[np.int_t, ndim=2] ndz, np.ndarray[np.int_t] nz,
@@ -45,3 +47,47 @@ def _sample_topics(np.ndarray[np.int_t] WS, np.ndarray[np.int_t] DS, np.ndarray[
         nzw[z_new, w] += 1
         ndz[d, z_new] += 1
         nz[z_new] += 1
+
+
+@cython.cdivision(True)
+cdef _sample_z(int w, np.ndarray[np.int_t] nz, np.ndarray[np.float_t, ndim=2] Phi, double alpha, r):
+    """
+    Sample new z given w, nz, and Phi.
+    r is a uniform random variate.
+    Assumes symmetric Dirichlet.
+    """
+    n_topics = len(nz)
+    probz = np.empty(n_topics)
+    for k in range(n_topics):
+        probz[k] = Phi[k, w] * nz[k] + alpha
+    z_new = horizont._utils.choice(probz, r)
+    return z_new
+
+
+@cython.cdivision(True)
+def _score_doc(np.ndarray[np.int_t] x, np.ndarray[np.float_t, ndim=2] Phi,
+               double alpha, int R, np.ndarray[np.float_t] rands):
+    WS, _ = horizont.utils.matrix_to_lists(np.atleast_2d(x))
+    ZS = np.zeros_like(WS)
+
+    n_rand = len(rands)
+    i = 0  # index for random draws
+
+    K = len(Phi)
+    ll = 0
+    for n, w in enumerate(WS):
+        pn = 0
+        # XXX: tracking just the histogram of topic counts might be faster
+        for r in range(R):
+            for nprime in range(n):
+                r = rands[i % n_rand]
+                i += 1
+                nz = np.bincount(np.delete(ZS[:n], nprime), minlength=K)
+                ZS[nprime] = _sample_z(WS[nprime], nz, Phi, alpha, r)
+            nz = np.bincount(ZS[:n], minlength=K)
+            Etheta = nz + alpha
+            Etheta = 1.0 * Etheta / np.sum(Etheta)
+            pn += np.dot(Phi[:, w], Etheta)
+        pn = 1.0 * pn / R
+        ll += np.log(pn)
+    return ll

@@ -24,9 +24,9 @@ def matrix_to_lists(doc_word):
 
     """
     if np.count_nonzero(doc_word.sum(axis=1)) != doc_word.shape[0]:
-        logger.warn("all zero row in document-term matrix found")
+        logger.warning("all zero row in document-term matrix found")
     if np.count_nonzero(doc_word.sum(axis=0)) != doc_word.shape[1]:
-        logger.warn("all zero column in document-term matrix found")
+        logger.warning("all zero column in document-term matrix found")
     try:
         doc_word = doc_word.tocoo()
     except AttributeError:
@@ -104,7 +104,7 @@ def dtm2ldac(dtm):
         yield docline
 
 
-def ldac2dtm(stream):
+def ldac2dtm(stream, offset=1):
     """Convert lda-c formatted file to a document-term array
 
     Parameters
@@ -118,25 +118,30 @@ def ldac2dtm(stream):
 
     Note
     ----
-    LDA-C formatted files are offset 1.
+    These LDA-C formatted files are offset 1.
     """
+    contents_bytes_maybe = stream.read()
     try:
-        contents = stream.read().decode('utf-8')
+        contents = contents_bytes_maybe.decode('utf-8')
     except AttributeError:
-        contents = stream.read()
+        contents = contents_bytes_maybe
 
+    # This is a sparse matrix, so we're not particularly concerned about memory
     doclines = [docline for docline in contents.split('\n') if docline]
 
-    # we need to figure out the dimensions of the dtm. N is easy. Finding V takes a pass through the data
+    # We need to figure out the dimensions of the dtm.
+    # Finding N is easy; finding V takes a pass through the data.
     N = len(doclines)
     data = []
     for l in doclines:
-        term_cnt_pairs = [s.split(':') for s in l.split(' ')[1:]]  # 1: skips first term in line
-        # check that format is indeed LDA-C
+        unique_terms = int(l.split(' ')[0])
+        term_cnt_pairs = [s.split(':') for s in l.split(' ')[1:]]
+        # check that format is indeed LDA-C with the appropriate offset
         for v, _ in term_cnt_pairs:
-            if v == 0:
+            if int(v) == 0 and offset == 1:
                 raise ValueError("Indexes in LDA-C are offset 1")
-        term_cnt_pairs = [(int(v) - 1, int(cnt)) for v, cnt in term_cnt_pairs]
+        term_cnt_pairs = [(int(v) - offset, int(cnt)) for v, cnt in term_cnt_pairs]
+        np.testing.assert_equal(unique_terms, len(term_cnt_pairs))
         data.append(term_cnt_pairs)
     V = -1
     for doc in data:

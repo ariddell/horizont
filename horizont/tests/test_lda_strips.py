@@ -2,7 +2,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import concurrent.futures as futures
 import os
-import shutil
 import tempfile
 import unittest
 
@@ -15,7 +14,6 @@ NUM_DOCS = 1000
 
 np.random.seed(1)
 
-from horizont.random import sample_index
 from horizont.metrics import kl_div
 from horizont import utils, LDA
 
@@ -91,8 +89,8 @@ def make_document(topics, doc_length, alpha=0.1):
     doctopic = np.random.dirichlet([alpha] * num_topics)
     document = np.zeros(vocab_size, dtype=int)
     for _ in range(doc_length):
-        z = sample_index(doctopic)
-        w = sample_index(topics[z])
+        z = np.random.choice(num_topics, p=doctopic)
+        w = np.random.choice(vocab_size, p=topics[z])
         document[w] += 1
     return document
 
@@ -149,7 +147,7 @@ def sparsify_topics(topics):
     return topics
 
 
-class TestLDAStripes(unittest.TestCase):
+class TestLDAStrips(unittest.TestCase):
 
     topics = make_topics(NUM_TOPICS)
     dtm = make_corpus(topics, NUM_DOCS, DOC_LENGTH)
@@ -276,24 +274,35 @@ class TestLDAStripes(unittest.TestCase):
         self.assertGreater(-240000, ll_cond)
         self.assertGreater(ll_cond, ll)
 
-    def test_LDA_held_out(self):
+    def test_LDA_held_out_basic(self):
         """
-        Use ad-hoc marginal log probability estimation.
+        Test basic properties of left-to-right sequential sampler evaluation method
         """
-        hold_prop = 0.2
-        n_iter = 100
+        # simple test for consistency and monotonicity
+        hold_prop = 0.05
+        n_iter = 10
+        R = 5
         n_topics_true, vocab_size = self.topics.shape
         dtm = self.dtm
         num_test = int(hold_prop * len(dtm))
         num_train = len(dtm) - num_test
         random_state = np.random.RandomState(5)
-        fit = LDA(n_topics=n_topics_true, n_iter=n_iter, random_state=random_state).fit(dtm)
-        ll_target = _loglikelihood_conditional(dtm[num_train:, :], fit.theta_[num_train:, :], fit.phi_)
-        dtm_train = dtm[0:num_train]
+        dtm_train = dtm[:num_train]
         dtm_test = dtm[num_train:]
+
+        # fit with lower n_iter
         fit = LDA(n_topics=n_topics_true, n_iter=n_iter, random_state=random_state).fit(dtm_train)
-        ndz_test = fit.transform(dtm_test)
-        theta = ndz_test + fit.alpha
-        theta /= np.sum(theta, axis=1, keepdims=True)
-        ll = _loglikelihood_conditional(dtm_test, theta, fit.phi_)
-        self.assertGreater(ll, ll_target - 3000)  # ll_target is around -49000
+
+        # quick test for consistency
+        logprob1 = np.sum(fit.score(dtm_test[:10], R=R, random_state=5))
+        logprob2 = np.sum(fit.score(dtm_test[:10], R=R, random_state=5))
+        self.assertEqual(logprob1, logprob2)
+
+        # score lower n_iter
+        logprob_orig = np.sum(fit.score(dtm_test, R=R, random_state=5))
+
+        # test with higher n_iter
+        n_iter = 20
+        fit = LDA(n_topics=n_topics_true, n_iter=n_iter, random_state=random_state).fit(dtm_train)
+        logprob = np.sum(fit.score(dtm_test, R=R))
+        self.assertGreater(logprob, logprob_orig)

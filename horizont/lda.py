@@ -1,19 +1,18 @@
 # coding=utf-8
 """
 Latent Dirichlet Allocation with Gibbs sampling
-
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 import logging
+from concurrent import futures
 
 import numpy as np
 from scipy.special import gammaln
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import check_random_state, as_float_array
 
-import horizont._lda as _lda
-import horizont.utils as utils
-from horizont.random import sample_index
+import horizont._lda
+import horizont.utils
 
 logger = logging.getLogger('horizont')
 
@@ -156,7 +155,7 @@ class LDA(BaseEstimator, TransformerMixin):
         self.nz = np.zeros(n_topics, dtype=int)
 
         # could be moved into Cython
-        self.WS, self.DS = utils.matrix_to_lists(X)
+        self.WS, self.DS = horizont.utils.matrix_to_lists(X)
         self.ZS = np.zeros_like(self.WS)
         for i, (w, d) in enumerate(zip(self.WS, self.DS)):
             # random initialization
@@ -213,9 +212,9 @@ class LDA(BaseEstimator, TransformerMixin):
         n_topics, vocab_size = self.nzw.shape
         alpha = np.repeat(self.alpha, n_topics)
         eta = np.repeat(self.eta, vocab_size)
-        _lda._sample_topics(self.WS, self.DS, self.ZS,
-                            self.nzw, self.ndz, self.nz,
-                            alpha, eta, rands)
+        horizont._lda._sample_topics(self.WS, self.DS, self.ZS,
+                                     self.nzw, self.ndz, self.nz,
+                                     alpha, eta, rands)
 
     def transform(self, X, y=None):
         """Transform the data X according to the fitted model
@@ -233,40 +232,7 @@ class LDA(BaseEstimator, TransformerMixin):
         Raw topic assignment counts
 
         """
-        n_iter, random_state = self.n_iter, self._random_state
-        ndz = self._sample_topics_test(X, n_iter, random_state)
-        return ndz
-
-    def _sample_topics_test(self, X, n_iter, random_state):
-        phi = self.phi_
-        alpha = self.alpha
-        n_topics, vocab_size = self.nzw.shape
-
-        # random initialization of ZS (test)
-        WS_test, DS_test = utils.matrix_to_lists(X)
-        ZS_test = np.zeros_like(WS_test)
-        ndz_test = np.zeros((len(X), n_topics))
-        for i, (w, d) in enumerate(zip(WS_test, DS_test)):
-            z_new = random_state.randint(n_topics)
-            ZS_test[i] = z_new
-            ndz_test[d, z_new] += 1
-
-        for i in range(len(ZS_test)):
-            z = ZS_test[i]
-            w = WS_test[i]
-            d = DS_test[i]
-
-            ndz_test[d, z] -= 1
-
-            # sample new value for z
-            probz = phi[:, w] * (ndz_test[d, :] + alpha)
-            z_new = sample_index(probz, random_state=random_state)
-            ZS_test[i] = z_new
-
-            ndz_test[d, z_new] += 1
-
-        np.testing.assert_equal(np.sum(X), np.sum(ndz_test))
-        return ndz_test
+        raise NotImplementedError
 
     def fit_transform(self, X, y=None):
         """Apply dimensionality reduction on X.
@@ -283,6 +249,52 @@ class LDA(BaseEstimator, TransformerMixin):
 
         """
         return self._fit(np.atleast_2d(X))
+
+    def score(self, X, R, random_state=None):
+        """
+        Calculate marginal probability of observations in X given Phi.
+
+        Returns a list with estimates for each document separately, mimicking
+        the behavior of scikit-learn. Uses Buntine's left-to-right sequential sampler.
+
+        Parameters
+        ----------
+        X : array, [n_samples, n_features]
+            The document-term matrix of documents for evaluation.
+
+        R : int
+            The number of particles to use for the estimation.
+
+        Returns
+        -------
+        logprobs : array of length n_samples
+            Estimate of marginal log probability for each row of X.
+        """
+        if random_state is None:
+            random_state, rands = self._random_state, self._rands
+        else:
+            random_state = check_random_state(random_state)
+            # get rands in a known state
+            rands = np.sort(self._rands)
+            random_state.shuffle(rands)
+
+        N, V = X.shape
+        Phi, alpha = self.phi_, self.alpha
+        np.testing.assert_equal(V, Phi.shape[1])
+
+        # calculate marginal probability for each document separately
+        logprobs = []
+        with futures.ProcessPoolExecutor() as ex:
+            futs = []
+            for x in X:
+                # for consistency one needs to pass a copy of rands
+                # I had thought futures pickles arguments, so this seems like a bug
+                futs.append(ex.submit(horizont._lda._score_doc, x, Phi, alpha, R, rands.copy()))
+                random_state.shuffle(rands)
+            for i, fut in enumerate(futs):
+                logger.info("Calculating marginal likelihood of doc {} of {}".format(i + 1, len(X)))
+                logprobs.append(fut.result())
+        return logprobs
 
     @property
     def theta_(self):
