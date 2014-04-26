@@ -40,9 +40,14 @@ if not ISRELEASED:
     FULLVERSION += '.dev'
 
 import os
+import sys
 from setuptools import setup, find_packages
 from distutils.command.sdist import sdist
 from distutils.extension import Extension
+
+PY2 = sys.version_info[0] == 2
+if PY2:
+    REQUIRES += ['futures']
 
 try:
     from Cython.Build import cythonize

@@ -35,6 +35,7 @@ Python 2.7 or Python 3.3+ is required. The following packages are also required:
 - numpy_
 - scipy_
 - scikit-learn_
+- futures (Python 2.7 only)
 
 `GSL <https://www.gnu.org/software/gsl/>`_ is required for random number
 generation inside the Pólya-Gamma random variate generator. On Debian-based
