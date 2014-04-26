@@ -3,4 +3,4 @@
 	url = https://github.com/jwindle/RNG.git
 [submodule "horizont/BayesLogit"]
 	path = horizont/BayesLogit
-	url = https://github.com/jwindle/BayesLogit.git
+	url = https://github.com/ariddell/BayesLogit.git
