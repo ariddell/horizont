@@ -8,8 +8,8 @@
 NAME                = 'horizont'
 DESCRIPTION         = 'Dynamic topic models'
 LONG_DESCRIPTION    =  open('README.rst').read()
-MAINTAINER          = 'Allen B. Riddell',
-MAINTAINER_EMAIL    = 'abr@ariddell.org',
+MAINTAINER          = 'Allen B. Riddell'
+MAINTAINER_EMAIL    = 'abr@ariddell.org'
 URL                 = 'https://github.com/ariddell/horizont'
 LICENSE             = 'GPLv3'
 CLASSIFIERS = [
