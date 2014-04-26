@@ -82,16 +82,51 @@ self._pyxfiles.append(pjoin(root, f))
 cmdclass = {'sdist': CheckSDist}
 
 
+###########################################################################
+# Cython extensions to compile
+###########################################################################
+
+random_sources = ["horizont/RNG/GRNG.cpp",
+                  "horizont/RNG/RNG.cpp",
+                  "horizont/BayesLogit/Code/C/PolyaGamma.cpp",
+                  "horizont/BayesLogit/Code/C/PolyaGammaAlt.cpp",
+                  "horizont/BayesLogit/Code/C/PolyaGammaSP.cpp",
+                  "horizont/BayesLogit/Code/C/InvertY.cpp"]
+
+include_gsl_dir = "/usr/include/"
+lib_gsl_dir = "/usr/lib/"
+random_include_dirs = ["horizont/BayesLogit/Code/C",
+                       "horizont/RNG",
+                       include_gsl_dir]
+random_library_dirs = [lib_gsl_dir]
+random_libraries = ['gsl', 'gslcblas']
+
+# FIXME: this could be simplified, c.f. pandas
 if cython:
-    extensions = cythonize([Extension("horizont._lda", ["horizont/_lda.pyx"]),
-                            Extension("horizont._utils", ["horizont/_utils.pyx"])])
+    extensions = [Extension("horizont._lda", ["horizont/_lda.pyx"]),
+                  Extension("horizont._random",
+                            ["horizont/_random.pyx"] + random_sources,
+                            include_dirs=random_include_dirs,
+                            library_dirs=random_library_dirs,
+                            libraries=random_libraries),
+                  Extension("horizont._utils", ["horizont/_utils.pyx"])]
+    extensions = cythonize(extensions)
 else:
     extensions = [Extension("horizont._lda", ["horizont/_lda.c"]),
+                  Extension("horizont._random",
+                            ["horizont/_random.cpp"] + random_sources,
+                            include_dirs=random_include_dirs,
+                            library_dirs=random_library_dirs,
+                            libraries=random_libraries),
                   Extension("horizont._utils", ["horizont/_utils.c"])]
 
 import numpy
 include_dirs = [numpy.get_include()]
 
+
+###########################################################################
+# Setup proper
+###########################################################################
 
 setup(install_requires=REQUIRES,
       name=NAME,

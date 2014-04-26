@@ -1,0 +1,6 @@
+[submodule "horizont/RNG"]
+	path = horizont/RNG
+	url = https://github.com/jwindle/RNG.git
+[submodule "horizont/BayesLogit"]
+	path = horizont/BayesLogit
+	url = https://github.com/jwindle/BayesLogit.git

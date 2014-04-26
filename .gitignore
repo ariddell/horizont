@@ -12,6 +12,7 @@ build
 
 *.so
 *.c
+*.cpp
 *.egg-info
 doc/_build
 vb_suite/benchmarks.db
