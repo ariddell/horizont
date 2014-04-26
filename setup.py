@@ -141,5 +141,5 @@ setup(install_requires=REQUIRES,
       classifiers=CLASSIFIERS,
       ext_modules=extensions,
       include_dirs=include_dirs,
-      package_data={'horizont.tests': ['ap.tgz']},
+      package_data={'horizont.tests': ['ap.dat', 'ch.ldac']},
       platforms='any')
