@@ -39,7 +39,7 @@ Python 2.7 or Python 3.3+ is required. The following packages are also required:
 `GSL <https://www.gnu.org/software/gsl/>`_ is required for random number
 generation inside the Pólya-Gamma random variate generator. On Debian-based
 sytems, GSL may be installed with the command ``sudo apt-get install
-lib-gsl0``.  horizont looks for GSL headers and libraries in ``/usr/include``
+libgsl0-dev``.  horizont looks for GSL headers and libraries in ``/usr/include``
 and ``/usr/lib/`` respectively.
 
 Important links
