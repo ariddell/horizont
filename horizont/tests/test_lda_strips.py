@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import concurrent.futures as futures
 import os
 import tempfile
 import unittest
@@ -242,16 +241,11 @@ class TestLDAStrips(unittest.TestCase):
         # 1. all samplers have log likelihood above some (lower) threshold
         # 2. at least one sampler has a log likelihood above a higher threshold
         lls = []
-        with futures.ProcessPoolExecutor(max_workers=None) as executor:
-            futs = []
-            for seed in range(4):
-                clf = LDA(n_topics=NUM_TOPICS, n_iter=n_iter, random_state=seed)
-                fut = executor.submit(clf.fit, dtm)
-                futs.append(fut)
-            for fut in futures.as_completed(futs):
-                clf = fut.result()
-                ll = clf.loglikelihood()
-                lls.append(ll)
+        for seed in range(4):
+            clf = LDA(n_topics=NUM_TOPICS, n_iter=n_iter, random_state=seed)
+            clf.fit(dtm)
+            ll = clf.loglikelihood()
+            lls.append(ll)
         for ll in lls:
             # LDA after 20 iterations should be -266000
             self.assertGreater(ll / n_words, -267000 / 1e5)

@@ -17,9 +17,10 @@ before_install:
   - sudo rm -rf /dev/shm
   - sudo ln -s /run/shm /dev/shm
 install:
-  - conda create --yes -n env_name python=$TRAVIS_PYTHON_VERSION pip scikit-learn numpy scipy nose futures
+  - conda create --yes -n env_name python=$TRAVIS_PYTHON_VERSION pip scikit-learn numpy Cython scipy nose futures
   - source activate env_name
+
   # use ``pip install .`` rather than ``python setup.py install`` due to travis log limits
   - pip install .
 
-script: nosetests -w /tmp horizont.tests
+script: JOBLIB_MULTIPROCESSING=0 nosetests -w /tmp horizont.tests

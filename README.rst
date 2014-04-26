@@ -42,6 +42,8 @@ sytems, GSL may be installed with the command ``sudo apt-get install
 libgsl0-dev``.  horizont looks for GSL headers and libraries in ``/usr/include``
 and ``/usr/lib/`` respectively.
 
+Cython is needed if compiling from source.
+
 Important links
 ---------------
 

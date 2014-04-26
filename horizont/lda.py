@@ -3,8 +3,12 @@
 Latent Dirichlet Allocation with Gibbs sampling
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
+import os
 import logging
-from concurrent import futures
+try:
+    from concurrent import futures
+except ImportError:
+    import futures
 
 import numpy as np
 from scipy.special import gammaln
@@ -284,16 +288,21 @@ class LDA(BaseEstimator, TransformerMixin):
 
         # calculate marginal probability for each document separately
         logprobs = []
-        with futures.ProcessPoolExecutor() as ex:
-            futs = []
+        multiprocessing = int(os.environ.get('JOBLIB_MULTIPROCESSING', 1)) or None
+        if multiprocessing:
+            with futures.ProcessPoolExecutor() as ex:
+                futs = []
+                for x in X:
+                    # for consistency one needs to pass a copy of rands
+                    # the executor takes time to pickle; it's not instantaneous
+                    futs.append(ex.submit(horizont._lda._score_doc, x, Phi, alpha, R, rands.copy()))
+                    random_state.shuffle(rands)
+                for i, fut in enumerate(futs):
+                    logprobs.append(fut.result())
+        else:
             for x in X:
-                # for consistency one needs to pass a copy of rands
-                # I had thought futures pickles arguments, so this seems like a bug
-                futs.append(ex.submit(horizont._lda._score_doc, x, Phi, alpha, R, rands.copy()))
+                logprobs.append(horizont._lda._score_doc(x, Phi, alpha, R, rands))
                 random_state.shuffle(rands)
-            for i, fut in enumerate(futs):
-                logger.info("Calculating marginal likelihood of doc {} of {}".format(i + 1, len(X)))
-                logprobs.append(fut.result())
         return logprobs
 
     @property
