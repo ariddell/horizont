@@ -10,8 +10,10 @@ followed.
 The following models are implemented using Gibbs sampling.
 
 - Latent Dirichlet allocation (Blei et al., 2003; Pritchard et al., 2000)
-- Logistic Normal topic model
-- Dynamic topic model (Blei and Lafferty, 2006)
+
+..
+    - Logistic normal topic model
+    - Dynamic topic model (Blei and Lafferty, 2006)
 
 Getting started
 ---------------
