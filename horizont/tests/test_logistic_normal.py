@@ -27,30 +27,39 @@ class TestLogisticNormal(unittest.TestCase):
         N = sum(nz)
         n_iter = 1000
         alpha = 1
-        m0 = 0
-        P0 = 1 / trigamma(alpha)
+        m0 = np.repeat(0, J)
+        P0 = np.diag(np.repeat(1/trigamma(alpha), J))
 
         # summary statistics
-        kappa = nz[:-1] - np.sum(nz)/2
+        kappa = nz - np.sum(nz)/2
 
         # initialize
-        beta = random_state.multivariate_normal(np.repeat(m0, J), np.diag(np.repeat(1/P0, J)))
+        beta = random_state.multivariate_normal(m0, np.linalg.inv(P0))
         beta[-1] = 0
-        omega = np.array([horizont.random.pg(np.sum(nz)//J, 0) for _ in range(J)])
+        omega = np.zeros(J)
+        c = np.zeros(J)
 
+        # variables to hold results
         THETA = np.empty((n_iter, J))
+
+        # sampling loop
         for it in range(n_iter):
-            for j in range(J-1):
+
+            for j in range(J):
                 c_j = scipy.misc.logsumexp(np.delete(beta, j))
+                c[j] = c_j
                 eta_j = beta[j] - c_j
                 # sample omega[j]
                 omega[j] = horizont.random.pg(N, eta_j)
                 self.assertGreater(omega[j], 0)
-                # sample beta[j]
-                P1 = omega[j] + P0
-                V1 = 1/P1
-                m1 = V1 * (kappa[j] + omega[j]*c_j + m0*P0)
-                beta[j] = random_state.normal(m1, np.sqrt(V1))
+
+            # sample beta
+            P1 = np.diag(omega) + P0
+            V1 = np.linalg.inv(P1)
+            m1 = np.dot(V1, (kappa + omega*c + np.dot(P0, m0)))
+            # this may generate an annoying deprecation warning
+            beta = random_state.multivariate_normal(m1, V1)
+            beta[-1] = 0
 
             # save scan
             THETA[it] = softmax(beta)
