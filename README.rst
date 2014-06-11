@@ -10,10 +10,8 @@ followed.
 The following models are implemented using Gibbs sampling.
 
 - Latent Dirichlet allocation (Blei et al., 2003; Pritchard et al., 2000)
-
-..
-    - Logistic normal topic model
-    - Dynamic topic model (Blei and Lafferty, 2006)
+- (Coming soon) Logistic normal topic model
+- (Coming soon) Dynamic topic model (Blei and Lafferty, 2006)
 
 Getting started
 ---------------
@@ -27,7 +25,8 @@ sampling. The interface follows conventions in scikit-learn_.
     >>> from horizont import LDA
     >>> X = np.array([[1,1], [2, 1], [3, 1], [4, 1], [5, 8], [6, 1]])
     >>> model = LDA(n_topics=2, random_state=0, n_iter=100)
-    >>> doc_topic = model.fit_transform(X)
+    >>> doc_topic = model.fit_transform(X)  # estimate of document-topic distributions
+    >>> model.components_  # estimate of topic-word distributions
 
 Requirements
 ------------

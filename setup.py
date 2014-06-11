@@ -29,15 +29,6 @@ CLASSIFIERS = [
     'Topic :: Scientific/Engineering :: Information Analysis'
 ]
 REQUIRES = ['numpy', 'scipy', 'scikit-learn']
-MAJOR = 0
-MINOR = 0
-MICRO = 3
-ISRELEASED = False
-VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
-
-FULLVERSION = VERSION
-if not ISRELEASED:
-    FULLVERSION += '.dev'
 
 import os
 import sys
@@ -48,6 +39,27 @@ from distutils.extension import Extension
 PY2 = sys.version_info[0] == 2
 if PY2:
     REQUIRES += ['futures']
+
+# VersionFinder from from django-compressor
+class VersionFinder(ast.NodeVisitor):
+    def __init__(self):
+        self.version = None
+
+    def visit_Assign(self, node):
+        if node.targets[0].id == '__version__':
+            self.version = node.value.s
+
+
+def read(*parts):
+    filename = os.path.join(os.path.dirname(__file__), *parts)
+    with codecs.open(filename, encoding='utf-8') as fp:
+        return fp.read()
+
+
+def find_version(*parts):
+    finder = VersionFinder()
+    finder.visit(ast.parse(read(*parts)))
+    return finder.version
 
 try:
     from Cython.Build import cythonize
@@ -135,7 +147,7 @@ include_dirs = [numpy.get_include()]
 
 setup(install_requires=REQUIRES,
       name=NAME,
-      version=FULLVERSION,
+      version=find_version("horizont", "__init__.py"),
       maintainer=MAINTAINER,
       maintainer_email=MAINTAINER_EMAIL,
       packages=find_packages(),

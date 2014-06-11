@@ -9,4 +9,4 @@
 v0.0.4 (TBA)
 ============
 
-- TBA
+- Fixed documentation
