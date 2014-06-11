@@ -229,7 +229,7 @@ class TestLDAStrips(unittest.TestCase):
             clf.fit(dtm)
             fits.append(clf)
             lls.append(clf.loglikelihood())
-        np.testing.assert_array_equal(fits[0].nzw, fits[1].nzw)
+        np.testing.assert_array_equal(fits[0].nzw_, fits[1].nzw_)
         self.assertEqual(lls[0], lls[1])
 
     def test_LDA(self):
@@ -254,11 +254,11 @@ class TestLDAStrips(unittest.TestCase):
 
     def test_LDA_loglikelihood(self):
         """
-        Test one loglikelihood calculation against another
+        Test loglikelihood calculations
         """
         dtm = self.dtm
         n_topics_true, vocab_size = self.topics.shape
-        n_iter = 35
+        n_iter = 10
         random_state = 5
         clf = LDA(n_topics=n_topics_true, n_iter=n_iter, random_state=random_state)
         clf.fit(dtm)
