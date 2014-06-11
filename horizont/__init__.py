@@ -10,4 +10,4 @@ logger = logging.getLogger('horizont')
 logger.addHandler(logging.NullHandler())
 
 # following PEP 386
-__version__ = "0.0.3"
+__version__ = "0.0.4"
