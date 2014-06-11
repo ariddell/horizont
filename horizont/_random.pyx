@@ -66,6 +66,7 @@ cdef rpg_hybrid(double *x, double *h, double *z, int* num, unsigned long seed):
 def pg(double b, double z, unsigned long seed):
     """Draw once from a Pólya-Gamma distribution"""
 
+    # TODO: vectorize this, see https://github.com/cython/cython/wiki/tutorials-NumpyPointerToC
     cdef:
         int size = 1
         double x
