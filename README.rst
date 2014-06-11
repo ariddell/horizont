@@ -49,9 +49,9 @@ Cython is needed if compiling from source.
 Important links
 ---------------
 
-- Home page: https://github.com/ariddell/horizont/
-- Documentation: http://horizont.readthedocs.org
-- Repository: https://github.com/ariddell/horizont.git
+- Documentation: http://pythonhosted.org/horizont
+- Source code: https://github.com/ariddell/horizont/
+- Issue tracker: https://github.com/ariddell/horizont/issues
 
 License
 -------
