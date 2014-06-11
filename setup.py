@@ -4,7 +4,6 @@
 # This file is licensed under Version 3.0 of the GNU General Public
 # License. See LICENSE for a text of the license.
 #-----------------------------------------------------------------------------
-
 NAME                = 'horizont'
 DESCRIPTION         = 'Dynamic topic models'
 LONG_DESCRIPTION    =  open('README.rst').read()
@@ -28,13 +27,17 @@ CLASSIFIERS = [
     'Topic :: Scientific/Engineering',
     'Topic :: Scientific/Engineering :: Information Analysis'
 ]
-REQUIRES = ['numpy', 'scipy', 'scikit-learn']
 
+import ast
+import codecs
 import os
 import sys
-from setuptools import setup, find_packages
+
+from setuptools import setup, find_packages  # before distutils import
 from distutils.command.sdist import sdist
 from distutils.extension import Extension
+
+REQUIRES = ['numpy', 'scipy', 'scikit-learn']
 
 PY2 = sys.version_info[0] == 2
 if PY2:
