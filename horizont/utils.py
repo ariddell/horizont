@@ -68,8 +68,8 @@ def lists_to_matrix(WS, DS):
     return doc_word
 
 
-def dtm2ldac(dtm):
-    """Convert a document-term matrix into a "LDA-C" formatted file
+def dtm2ldac(dtm, offset=0):
+    """Convert a document-term matrix into an LDA-C formatted file
 
     Parameters
     ----------
@@ -81,13 +81,13 @@ def dtm2ldac(dtm):
 
     Note
     ----
-    These particular LDA-C formatted files are offset 1.
+    If a format similar to SVMLight is desired, `offset` of 1 may be used.
     """
     try:
         dtm = dtm.tocsr()
     except AttributeError:
         pass
-    num_rows = dtm.shape[0]
+    n_rows = dtm.shape[0]
     for i, row in enumerate(dtm):
         try:
             row = row.toarray().squeeze()
@@ -96,21 +96,21 @@ def dtm2ldac(dtm):
         unique_terms = np.count_nonzero(row)
         if unique_terms == 0:
             raise ValueError("dtm contains row with all zero entries.")
-        term_cnt_pairs = [(i + 1, cnt) for i, cnt in enumerate(row) if cnt > 0]
+        term_cnt_pairs = [(i + offset, cnt) for i, cnt in enumerate(row) if cnt > 0]
         docline = str(unique_terms) + ' '
         docline += ' '.join(["{}:{}".format(i, cnt) for i, cnt in term_cnt_pairs])
         if (i + 1) % 1000 == 0:
-            logger.info("dtm2ldac: on row {} of {}".format(i + 1, num_rows))
+            logger.info("dtm2ldac: on row {} of {}".format(i + 1, n_rows))
         yield docline
 
 
-def ldac2dtm(stream, offset=1):
-    """Convert lda-c formatted file to a document-term array
+def ldac2dtm(stream, offset=0):
+    """Convert an LDA-C formatted file to a document-term array
 
     Parameters
     ----------
-    stream : file object
-        Object that has a `read` method.
+    stream: file object
+        File yielding unicode strings in LDA-C format.
 
     Returns
     -------
@@ -118,35 +118,30 @@ def ldac2dtm(stream, offset=1):
 
     Note
     ----
-    These LDA-C formatted files are offset 1.
+    If a format similar to SVMLight is the source, an `offset` of 1 may be used.
     """
-    contents_bytes_maybe = stream.read()
-    try:
-        contents = contents_bytes_maybe.decode('utf-8')
-    except AttributeError:
-        contents = contents_bytes_maybe
-
-    # This is a sparse matrix, so we're not particularly concerned about memory
-    doclines = [docline for docline in contents.split('\n') if docline]
+    doclines = stream
 
     # We need to figure out the dimensions of the dtm.
-    # Finding N is easy; finding V takes a pass through the data.
-    N = len(doclines)
+    N = 0
+    V = -1
     data = []
     for l in doclines:
+        l = l.strip()
+        # skip empty lines
+        if not l:
+            continue
         unique_terms = int(l.split(' ')[0])
         term_cnt_pairs = [s.split(':') for s in l.split(' ')[1:]]
-        # check that format is indeed LDA-C with the appropriate offset
         for v, _ in term_cnt_pairs:
+            # check that format is indeed LDA-C with the appropriate offset
             if int(v) == 0 and offset == 1:
                 raise ValueError("Indexes in LDA-C are offset 1")
-        term_cnt_pairs = [(int(v) - offset, int(cnt)) for v, cnt in term_cnt_pairs]
+        term_cnt_pairs = tuple((int(v) - offset, int(cnt)) for v, cnt in term_cnt_pairs)
         np.testing.assert_equal(unique_terms, len(term_cnt_pairs))
+        V = max(V, *[v for v, cnt in term_cnt_pairs])
         data.append(term_cnt_pairs)
-    V = -1
-    for doc in data:
-        vocab_indicies = [V] + [v for v, cnt in doc]
-        V = max(vocab_indicies)
+        N += 1
     V = V + 1
     dtm = np.zeros((N, V), dtype=int)
     for i, doc in enumerate(data):
