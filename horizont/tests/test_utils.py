@@ -51,6 +51,13 @@ class TestUtils(unittest.TestCase):
         with self.assertRaises(ValueError):
             utils.ldac2dtm(open(ap_ldac_fn), offset=1)
 
+    def test_ldac2dtm(self):
+        test_dir = os.path.dirname(__file__)
+        ap_ldac_fn = os.path.join(test_dir, 'ch.ldac')
+        dtm = utils.ldac2dtm(open(ap_ldac_fn))
+        self.assertEqual(dtm.shape, (395, 4258))
+        self.assertEqual(dtm.sum(), 84010)
+
     def test_ldac_conversion(self):
         dtm = self.dtm
         N, V = dtm.shape
