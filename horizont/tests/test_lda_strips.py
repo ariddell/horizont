@@ -7,14 +7,15 @@ import unittest
 import numpy as np
 import scipy.misc
 
+import horizont
+import horizont.metrics
+import horizont.utils
+
 NUM_TOPICS = 10
 DOC_LENGTH = 100
 NUM_DOCS = 1000
 
 np.random.seed(1)
-
-from horizont.metrics import kl_div
-from horizont import utils, LDA
 
 
 def _loglikelihood_conditional(X, THETA, PHI):
@@ -112,7 +113,7 @@ def identify_topic(unknown_topic, topics):
     # pending an improved implementation of kl_div
     X = np.vstack([topics, unknown_topic])
     np.testing.assert_equal(len(X), len(topics) + 1)
-    dist = kl_div(X+1e-7)  # avoid np.log(0)
+    dist = horizont.metrics.kl_div(X+1e-7)  # avoid np.log(0)
     closest_topic_index = np.delete(dist[-1], -1).argmin()
     return closest_topic_index
 
@@ -152,7 +153,7 @@ class TestLDAStrips(unittest.TestCase):
     dtm = make_corpus(topics, NUM_DOCS, DOC_LENGTH)
     tempdir = tempfile.mkdtemp()
     with open(os.path.join(tempdir, 'strips.ldac'), 'w') as f:
-        f.write('\n'.join(utils.dtm2ldac(dtm)))
+        f.write('\n'.join(horizont.utils.dtm2ldac(dtm)))
         f.write('\n')
 
     def test_topics(self):
@@ -210,10 +211,10 @@ class TestLDAStrips(unittest.TestCase):
         topics = self.topics
         dtm = self.dtm
         num_topics, vocab_size = topics.shape
-        WS, DS = utils.matrix_to_lists(dtm)
+        WS, DS = horizont.utils.matrix_to_lists(dtm)
         self.assertEqual(max(WS) + 1, vocab_size)
         self.assertEqual(max(DS) + 1, NUM_DOCS)
-        dtm_recovered = utils.lists_to_matrix(WS, DS)
+        dtm_recovered = horizont.utils.lists_to_matrix(WS, DS)
         np.testing.assert_allclose(dtm, dtm_recovered)
 
     def test_LDA_random_seed(self):
@@ -223,14 +224,16 @@ class TestLDAStrips(unittest.TestCase):
         dtm = self.dtm
         n_iter = 2
         random_state = 5
-        fits, lls = [], []
+        fits = []
         for _ in range(2):
-            clf = LDA(n_topics=NUM_TOPICS, n_iter=n_iter, random_state=random_state)
+            clf = horizont.LDA(n_topics=NUM_TOPICS, n_iter=n_iter, random_state=random_state)
             clf.fit(dtm)
             fits.append(clf)
-            lls.append(clf.loglikelihood())
         np.testing.assert_array_equal(fits[0].nzw_, fits[1].nzw_)
-        self.assertEqual(lls[0], lls[1])
+        np.testing.assert_array_equal(fits[0].ndz_, fits[1].ndz_)
+        np.testing.assert_array_equal(fits[0].theta_, fits[1].theta_)
+        np.testing.assert_array_equal(fits[0].components_, fits[1].components_)
+        np.testing.assert_array_equal(fits[0].loglikelihood(), fits[1].loglikelihood())
 
     def test_LDA(self):
         dtm = self.dtm
@@ -242,7 +245,7 @@ class TestLDAStrips(unittest.TestCase):
         # 2. at least one sampler has a log likelihood above a higher threshold
         lls = []
         for seed in range(4):
-            clf = LDA(n_topics=NUM_TOPICS, n_iter=n_iter, random_state=seed)
+            clf = horizont.LDA(n_topics=NUM_TOPICS, n_iter=n_iter, random_state=seed)
             clf.fit(dtm)
             ll = clf.loglikelihood()
             lls.append(ll)
@@ -260,7 +263,7 @@ class TestLDAStrips(unittest.TestCase):
         n_topics_true, vocab_size = self.topics.shape
         n_iter = 10
         random_state = 5
-        clf = LDA(n_topics=n_topics_true, n_iter=n_iter, random_state=random_state)
+        clf = horizont.LDA(n_topics=n_topics_true, n_iter=n_iter, random_state=random_state)
         clf.fit(dtm)
         theta, phi = clf.theta_, clf.phi_
         ll = clf.loglikelihood()
@@ -285,7 +288,7 @@ class TestLDAStrips(unittest.TestCase):
         dtm_test = dtm[num_train:]
 
         # fit with lower n_iter
-        fit = LDA(n_topics=n_topics_true, n_iter=n_iter, random_state=random_state).fit(dtm_train)
+        fit = horizont.LDA(n_topics=n_topics_true, n_iter=n_iter, random_state=random_state).fit(dtm_train)
 
         # quick test for consistency
         logprob1 = np.sum(fit.score(dtm_test[:10], R=R, random_state=5))
@@ -297,6 +300,6 @@ class TestLDAStrips(unittest.TestCase):
 
         # test with higher n_iter
         n_iter = 20
-        fit = LDA(n_topics=n_topics_true, n_iter=n_iter, random_state=random_state).fit(dtm_train)
+        fit = horizont.LDA(n_topics=n_topics_true, n_iter=n_iter, random_state=random_state).fit(dtm_train)
         logprob = np.sum(fit.score(dtm_test, R=R))
         self.assertGreater(logprob, logprob_orig)
