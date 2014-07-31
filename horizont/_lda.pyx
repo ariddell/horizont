@@ -9,6 +9,9 @@ import numpy as np
 import horizont.utils
 import horizont._utils
 
+PY2 = sys.version_info[0] == 2
+if PY2:
+    range = xrange
 
 @cython.cdivision(True)
 def _sample_topics(np.ndarray[np.int_t] WS, np.ndarray[np.int_t] DS, np.ndarray[np.int_t] ZS,
