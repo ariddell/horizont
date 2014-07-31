@@ -3,12 +3,13 @@
 Latent Dirichlet Allocation with Gibbs sampling
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
-import os
-import logging
 try:
-    from concurrent import futures
+    import concurrent.futures as futures
 except ImportError:
     import futures
+import logging
+import os
+import sys
 
 import numpy as np
 import scipy.special
@@ -17,6 +18,11 @@ import sklearn.utils
 
 import horizont._lda
 import horizont.utils
+
+PY2 = sys.version_info[0] == 2
+if PY2:
+    from itertools import izip as zip
+
 
 logger = logging.getLogger('horizont')
 
