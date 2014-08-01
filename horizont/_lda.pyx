@@ -5,6 +5,7 @@ cimport cython
 cimport numpy as np
 cimport libc.math as math
 
+import sys
 import numpy as np
 import horizont.utils
 import horizont._utils
