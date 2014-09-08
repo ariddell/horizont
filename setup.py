@@ -113,8 +113,8 @@ random_sources = ["horizont/RNG/GRNG.cpp",
                   "horizont/BayesLogit/Code/C/PolyaGammaSP.cpp",
                   "horizont/BayesLogit/Code/C/InvertY.cpp"]
 
-include_gsl_dir = "/usr/include/"
-lib_gsl_dir = "/usr/lib/"
+include_gsl_dir = os.environ.get('GSL_INC_DIR', "/usr/include/")
+lib_gsl_dir = os.environ.get('GSL_LIB_DIR', "/usr/lib/")
 random_include_dirs = ["horizont/BayesLogit/Code/C",
                        "horizont/RNG",
                        include_gsl_dir]

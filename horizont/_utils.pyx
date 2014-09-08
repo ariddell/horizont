@@ -1,13 +1,16 @@
-import numpy as np
-cimport numpy as np
+#cython: language_level=3
+#cython: boundscheck=False
+#cython: wraparound=False
 
-cpdef searchsorted(np.ndarray[np.float_t] arr, double v):
+from libc.stdlib cimport malloc, free
+
+cpdef int searchsorted(double[:] arr, double v):
     """
     Find index where an element should be inserted to maintain order.
     
     This is a Cython version of numpy.searchsorted (bisection search).
     """
-    cdef unsigned int imin, imax, imid
+    cdef int imin, imax, imid
     imin = 0
     imax = len(arr)
     while imin < imax:
@@ -19,15 +22,19 @@ cpdef searchsorted(np.ndarray[np.float_t] arr, double v):
     return imin
 
 
-cpdef choice(np.ndarray[np.float_t] p, double r):
+cpdef int choice(double[:] p, double r):
     """
     Cython version of numpy.random.choice where uniform random variate r must
     be provided.
     """
-    cdef double dist_cum = 0
+    cdef int k, z
     cdef int K = len(p)
-    cdef np.ndarray[np.float_t] dist_sum = np.empty(K)
+    cdef double dist_cum = 0
+    cdef double * dist_sum_ptr = <double*> malloc(sizeof(double) * K)
+    cdef double[:] dist_sum = <double [:K]> dist_sum_ptr
     for k in range(K):
         dist_cum += p[k]
         dist_sum[k] = dist_cum
-    return searchsorted(dist_sum, dist_cum * r)
+    z = searchsorted(dist_sum, dist_cum * r)
+    free(<void *> dist_sum_ptr)
+    return z

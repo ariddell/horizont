@@ -9,11 +9,13 @@ import horizont
 
 class TestLDANews(unittest.TestCase):
 
-    test_dir = os.path.dirname(__file__)
-    ap_ldac_fn = os.path.join(test_dir, 'ap.dat')
-    dtm = horizont.utils.ldac2dtm(open(ap_ldac_fn), offset=0)
-    model = horizont.LDA(n_topics=10, n_iter=2, random_state=1)
-    doctopic = model.fit_transform(dtm)
+    @classmethod
+    def setUpClass(cls):
+        test_dir = os.path.dirname(__file__)
+        ap_ldac_fn = os.path.join(test_dir, 'ap.dat')
+        cls.dtm = dtm = horizont.utils.ldac2dtm(open(ap_ldac_fn), offset=0)
+        cls.model = model = horizont.LDA(n_topics=10, n_iter=2, random_state=1)
+        cls.doctopic = model.fit_transform(dtm)
 
     def test_lda_news(self):
         dtm = self.dtm

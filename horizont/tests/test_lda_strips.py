@@ -2,13 +2,13 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os
 import tempfile
-import unittest
 
 import numpy as np
 import scipy.misc
 
 import horizont
 import horizont.metrics
+from horizont.tests import base
 import horizont.utils
 
 NUM_TOPICS = 10
@@ -147,7 +147,7 @@ def sparsify_topics(topics):
     return topics
 
 
-class TestLDAStrips(unittest.TestCase):
+class TestLDAStrips(base.TestCase):
 
     topics = make_topics(NUM_TOPICS)
     dtm = make_corpus(topics, NUM_DOCS, DOC_LENGTH)

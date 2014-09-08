@@ -1,32 +1,32 @@
+#cython: language_level=3
 #cython: boundscheck=False
 #cython: wraparound=False
 
 cimport cython
-cimport numpy as np
+cimport cpython.array
 cimport libc.math as math
+from libc.stdlib cimport malloc, free
+cimport numpy as np
 
 import sys
 import numpy as np
+
 import horizont.utils
 import horizont._utils
 
-PY2 = sys.version_info[0] == 2
-if PY2:
-    range = xrange
 
 @cython.cdivision(True)
-def _sample_topics(np.ndarray[np.int_t] WS, np.ndarray[np.int_t] DS, np.ndarray[np.int_t] ZS,
-                   np.ndarray[np.int_t, ndim=2] nzw, np.ndarray[np.int_t, ndim=2] ndz, np.ndarray[np.int_t] nz,
-                   np.ndarray[np.float_t] alpha, np.ndarray[np.float_t] eta, np.ndarray[np.float_t] rands):
-    cdef unsigned int i, w, d, z, z_new, n_topics
-    cdef unsigned int n_rand = len(rands)
+def _sample_topics(int[:] WS, int[:] DS, int[:] ZS, int[:, :] nzw, int[:, :] ndz, int[:] nz,
+                   double[:] alpha, double[:] eta, double[:] rands):
+    cdef int i, k, w, d, z, z_new, n_topics
+    cdef int n_rand = len(rands)
     cdef double r, dist_cum
-    cdef np.ndarray[np.float_t] dist_sum
-    n_topics = len(nzw)
     cdef double alpha_sum = sum(alpha)
     cdef double eta_sum = sum(eta)
+    n_topics = len(nzw)
 
-    dist_sum = np.empty(n_topics)
+    cdef double * dist_sum_ptr = <double*> malloc(sizeof(double) * n_topics)
+    cdef double[:] dist_sum = <double [:n_topics]> dist_sum_ptr
 
     for i in range(len(WS)):
         w = WS[i]
@@ -51,6 +51,8 @@ def _sample_topics(np.ndarray[np.int_t] WS, np.ndarray[np.int_t] DS, np.ndarray[
         nzw[z_new, w] += 1
         ndz[d, z_new] += 1
         nz[z_new] += 1
+
+    free(<void *> dist_sum_ptr)
 
 
 @cython.cdivision(True)

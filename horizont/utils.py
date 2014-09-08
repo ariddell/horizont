@@ -33,8 +33,8 @@ def matrix_to_lists(doc_word):
         doc_word = scipy.sparse.coo_matrix(doc_word)
     ii, jj, ss = doc_word.row, doc_word.col, doc_word.data
     n_tokens = int(doc_word.sum())
-    DS = np.zeros(n_tokens, dtype=int)
-    WS = np.zeros(n_tokens, dtype=int)
+    DS = np.zeros(n_tokens, dtype=np.intc)
+    WS = np.zeros(n_tokens, dtype=np.intc)
     startidx = 0
     for i, cnt in enumerate(ss):
         cnt = int(cnt)
@@ -61,7 +61,7 @@ def lists_to_matrix(WS, DS):
     """
     D = max(DS) + 1
     V = max(WS) + 1
-    doc_word = np.zeros((D, V), dtype=int)
+    doc_word = np.zeros((D, V), dtype=np.intc)
     for d in range(D):
         for v in range(V):
             doc_word[d, v] = np.count_nonzero(WS[DS == d] == v)
@@ -143,7 +143,7 @@ def ldac2dtm(stream, offset=0):
         data.append(term_cnt_pairs)
         N += 1
     V = V + 1
-    dtm = np.zeros((N, V), dtype=int)
+    dtm = np.zeros((N, V), dtype=np.intc)
     for i, doc in enumerate(data):
         for v, cnt in doc:
             np.testing.assert_(dtm[i, v] == 0)

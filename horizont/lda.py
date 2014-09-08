@@ -173,13 +173,13 @@ class LDA(sklearn.base.BaseEstimator, sklearn.base.TransformerMixin):
         logger.info("n_topics: {}".format(n_topics))
         logger.info("n_iter: {}".format(n_iter))
 
-        self.nzw_ = np.zeros((n_topics, W), dtype=int)
-        self.ndz_ = np.zeros((D, n_topics), dtype=int)
-        self.nz_ = np.zeros(n_topics, dtype=int)
+        self.nzw_ = np.zeros((n_topics, W), dtype=np.intc)
+        self.ndz_ = np.zeros((D, n_topics), dtype=np.intc)
+        self.nz_ = np.zeros(n_topics, dtype=np.intc)
 
         # could be moved into Cython
         self.WS, self.DS = horizont.utils.matrix_to_lists(X)
-        self.ZS = np.zeros_like(self.WS)
+        self.ZS = np.zeros_like(self.WS, dtype=np.intc)
         for i, (w, d) in enumerate(zip(self.WS, self.DS)):
             # random initialization
             # FIXME: improve initialization
@@ -234,11 +234,9 @@ class LDA(sklearn.base.BaseEstimator, sklearn.base.TransformerMixin):
         rands = self._rands
         random_state.shuffle(rands)
         n_topics, vocab_size = self.nzw_.shape
-        alpha = np.repeat(self.alpha, n_topics)
-        eta = np.repeat(self.eta, vocab_size)
-        horizont._lda._sample_topics(self.WS, self.DS, self.ZS,
-                                     self.nzw_, self.ndz_, self.nz_,
-                                     alpha, eta, rands)
+        alpha = np.repeat(self.alpha, n_topics).astype(float)
+        eta = np.repeat(self.eta, vocab_size).astype(float)
+        horizont._lda._sample_topics(self.WS, self.DS, self.ZS, self.nzw_, self.ndz_, self.nz_, alpha, eta, rands)
 
     def transform(self, X, y=None):
         """Transform the data X according to the fitted model
