@@ -5,7 +5,7 @@
 # License. See LICENSE for a text of the license.
 #-----------------------------------------------------------------------------
 NAME                = 'horizont'
-DESCRIPTION         = 'Dynamic topic models'
+DESCRIPTION         = 'Topic models'
 LONG_DESCRIPTION    =  open('README.rst').read()
 MAINTAINER          = 'Allen B. Riddell'
 MAINTAINER_EMAIL    = 'abr@ariddell.org'
