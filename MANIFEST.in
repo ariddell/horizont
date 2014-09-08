@@ -8,3 +8,6 @@ global-exclude *.so
 global-exclude *.pyc
 global-exclude .git*
 global-exclude *.png
+
+# Exclude .R files in BayesLogit
+global-exclude *.R

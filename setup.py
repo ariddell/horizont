@@ -1,5 +1,5 @@
 #-----------------------------------------------------------------------------
-# Copyright (c) 2013, Allen B. Riddell
+# Copyright (c) 2013-2014, Allen B. Riddell
 #
 # This file is licensed under Version 3.0 of the GNU General Public
 # License. See LICENSE for a text of the license.
@@ -71,22 +71,16 @@ except ImportError:
     cython = False
 
 
-# use CheckSDist strategy from pandas
 class CheckSDist(sdist):
     """Custom sdist that ensures Cython has compiled all pyx files to c."""
 
-    _pyxfiles = ['horizont/_lda.pyx']
-
     def initialize_options(self):
         sdist.initialize_options(self)
-
-        '''
-self._pyxfiles = []
-for root, dirs, files in os.walk('pandas'):
-for f in files:
-if f.endswith('.pyx'):
-self._pyxfiles.append(pjoin(root, f))
-'''
+        self._pyxfiles = []
+        for root, dirs, files in os.walk('horizont'):
+            for f in files:
+                if f.endswith('.pyx'):
+                    self._pyxfiles.append(os.path.join(root, f))
 
     def run(self):
         if 'cython' in cmdclass:
@@ -115,9 +109,7 @@ random_sources = ["horizont/RNG/GRNG.cpp",
 
 include_gsl_dir = os.environ.get('GSL_INC_DIR', "/usr/include/")
 lib_gsl_dir = os.environ.get('GSL_LIB_DIR', "/usr/lib/")
-random_include_dirs = ["horizont/BayesLogit/Code/C",
-                       "horizont/RNG",
-                       include_gsl_dir]
+random_include_dirs = ["horizont/BayesLogit/Code/C", "horizont/RNG", include_gsl_dir]
 random_library_dirs = [lib_gsl_dir]
 random_libraries = ['gsl', 'gslcblas']
 
@@ -147,6 +139,17 @@ else:
 import numpy
 include_dirs = [numpy.get_include()]
 
+# package data
+package_data_pats = ['*.hpp', '*.pxd', '*.pyx', 'tests/*.dat', 'tests/*.ldac']
+
+# get every file under horizont/BayesLogit/Code/C/", "horizont/RNG/"
+package_data_pats += sum(
+    [[os.path.join(path.replace('horizont/', ''), fn) for fn in files]
+     for path, dirs, files in os.walk('horizont/BayesLogit/Code/C/')], [])
+
+package_data_pats += sum(
+    [[os.path.join(path.replace('horizont/', ''), fn) for fn in files]
+     for path, dirs, files in os.walk('horizont/RNG/')], [])
 
 ###########################################################################
 # Setup proper
@@ -165,5 +168,5 @@ setup(install_requires=REQUIRES,
       classifiers=CLASSIFIERS,
       ext_modules=extensions,
       include_dirs=include_dirs,
-      package_data={'horizont.tests': ['ap.dat', 'ch.ldac']},
+      package_data={'horizont' : package_data_pats},
       platforms='any')

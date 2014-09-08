@@ -1,4 +1,8 @@
 # distutils: language = c++
+#cython: language_level=3
+#cython: boundscheck=False
+#cython: wraparound=False
+
 from cython.operator cimport dereference as deref
 from libc.math cimport sqrt
 

@@ -1,5 +1,5 @@
-horizont: Dynamic topic models
-==============================
+horizont: Topic models in Python
+================================
 
 .. image:: https://travis-ci.org/ariddell/horizont.png
         :target: https://travis-ci.org/ariddell/horizont
