@@ -122,13 +122,16 @@ random_library_dirs = [lib_gsl_dir]
 random_libraries = ['gsl', 'gslcblas']
 
 # FIXME: this could be simplified, c.f. pandas
+# The build will not fail if GSL cannot be found, but extensions requiring GSL
+# will not work.
 if cython:
     extensions = [Extension("horizont._lda", ["horizont/_lda.pyx"]),
                   Extension("horizont._random",
                             ["horizont/_random.pyx"] + random_sources,
                             include_dirs=random_include_dirs,
                             library_dirs=random_library_dirs,
-                            libraries=random_libraries),
+                            libraries=random_libraries,
+                            optional=True),
                   Extension("horizont._utils", ["horizont/_utils.pyx"])]
     extensions = cythonize(extensions)
 else:
@@ -137,7 +140,8 @@ else:
                             ["horizont/_random.cpp"] + random_sources,
                             include_dirs=random_include_dirs,
                             library_dirs=random_library_dirs,
-                            libraries=random_libraries),
+                            libraries=random_libraries,
+                            optional=True),
                   Extension("horizont._utils", ["horizont/_utils.c"])]
 
 import numpy
