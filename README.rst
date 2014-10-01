@@ -1,3 +1,8 @@
+
+NOTE: The implementation of LDA has been broken out (and refined) into `lda
+<https://github.com/ariddell/lda>`_.
+
+
 horizont: Topic models in Python
 ================================
 
