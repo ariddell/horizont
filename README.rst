@@ -1,7 +1,9 @@
+**In haitus.** Currently evaluating best way to approach the DTM model. Using the Pólya-Gamma augmentation and the original DTM formulation is complicated and might not give better performance than simpler models (e.g., using truncated Pitman-Yor Processes).
 
 NOTE: The implementation of LDA has been broken out (and refined) into `lda
 <https://github.com/ariddell/lda>`_.
 
+NOTE: If you're interested in implementing the dynamic topic model using Pólya-Gamma, most of the hard work has been done: https://github.com/HIPS/pgmult
 
 horizont: Topic models in Python
 ================================
