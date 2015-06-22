@@ -1,4 +1,4 @@
-**In haitus.** Currently evaluating best way to approach the DTM model. Using the Pólya-Gamma augmentation and the original DTM formulation is complicated and might not give better performance than simpler models (e.g., using truncated Pitman-Yor Processes).
+**In hiatus.** Currently evaluating best way to approach the DTM model. Using the Pólya-Gamma augmentation and the original DTM formulation is complicated and might not give better performance than simpler models (e.g., using truncated Pitman-Yor Processes).
 
 NOTE: The implementation of LDA has been broken out (and refined) into `lda
 <https://github.com/ariddell/lda>`_.
